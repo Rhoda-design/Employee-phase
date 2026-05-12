@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BCM Appraisal Portal — Employee</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--y:#FCB900;--yl:#FFF8E1;--dark:#101018;--bg:#F7F7F5;--w:#fff;--bd:#E2E2DC;--tx:#1A1A18;--mt:#6B6B67;--ok:#16A34A;--er:#DC2626;--f:system-ui,-apple-system,sans-serif}
+body{font-family:var(--f);background:var(--bg);min-height:100vh}
+.scr{display:none}.scr.on{display:block}
+/* ── HEADER TABS ── */
+.hdr-tabs{display:flex;align-items:center;gap:2px;background:rgba(255,255,255,.07);border-radius:8px;padding:3px}
+.hdr-tab-btn{padding:5px 14px;border-radius:6px;font-size:12px;font-weight:500;color:rgba(255,255,255,.55);cursor:pointer;border:none;background:transparent;font-family:var(--f);transition:all .15s;white-space:nowrap}
+.hdr-tab-btn:hover{color:#fff}
+.hdr-tab-btn.on{background:var(--w);color:var(--dark);font-weight:700}
+/* ── LOGBOOK ── */
+.lb-entry{background:var(--w);border:1px solid var(--bd);border-radius:10px;padding:16px 18px;margin-bottom:10px;cursor:pointer;transition:border-color .15s}
+.lb-entry:hover{border-color:var(--y)}
+.lb-entry-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:6px}
+.lb-type-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap;flex-shrink:0}
+.lb-work{background:#EFF6FF;color:#1D4ED8}.lb-win{background:#F0FDF4;color:#15803D}.lb-learn{background:var(--yl);color:#7B5800}
+.lb-title{font-size:14px;font-weight:600;color:var(--tx);line-height:1.4}
+.lb-meta{font-size:11px;color:var(--mt);margin-top:2px}
+.lb-body{font-size:13px;color:var(--mt);line-height:1.6;margin-top:4px}
+.lb-kpi-tag{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:600;background:#F5F5F2;color:var(--mt);margin-top:8px}
+.lb-empty{text-align:center;padding:56px 20px}
+.lb-empty-icon{font-size:44px;margin-bottom:14px}
+.lb-empty-t{font-size:16px;font-weight:600;color:var(--tx);margin-bottom:6px}
+.lb-empty-s{font-size:13px;color:var(--mt);line-height:1.65}
+.lb-filter-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.lb-fsel{border:1.5px solid var(--bd);border-radius:7px;padding:7px 12px;font-size:12px;color:var(--tx);background:var(--w);outline:none;cursor:pointer;font-family:var(--f)}
+.lb-fsel:focus{border-color:var(--y)}
+.lb-srch{flex:1;min-width:180px;border:1.5px solid var(--bd);border-radius:7px;padding:7px 12px;font-size:12px;color:var(--tx);background:var(--w);outline:none;font-family:var(--f)}
+.lb-srch:focus{border-color:var(--y)}
+.lb-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.lb-stat{background:var(--w);border:1px solid var(--bd);border-radius:8px;padding:12px 16px;text-align:center}
+.lb-stat-v{font-size:22px;font-weight:700;color:var(--tx)}
+.lb-stat-l{font-size:11px;color:var(--mt);margin-top:2px}
+/* ── SUBMIT MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.hidden{display:none}
+.modal-box{background:var(--w);border-radius:14px;width:100%;max-width:420px;padding:32px 28px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.2)}
+.modal-icon{font-size:38px;margin-bottom:14px}
+.modal-box h2{font-size:19px;font-weight:700;color:var(--tx);margin-bottom:8px;letter-spacing:-.3px}
+.modal-box p{font-size:13px;color:var(--mt);line-height:1.65;margin-bottom:22px}
+.modal-btns{display:flex;gap:10px}
+.modal-btns .btn{flex:1}
+/* ── NEW ENTRY MODAL ── */
+.entry-modal{background:var(--w);border-radius:14px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.2)}
+.entry-modal-hdr{padding:20px 24px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between}
+.entry-modal-hdr h2{font-size:17px;font-weight:700;color:var(--tx)}
+.modal-close{width:28px;height:28px;border-radius:6px;border:1px solid var(--bd);background:var(--w);cursor:pointer;font-size:16px;color:var(--mt)}
+.modal-close:hover{background:var(--bg)}
+.entry-modal-body{padding:20px 24px}
+.entry-type-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px}
+.et-tab{border:1.5px solid var(--bd);border-radius:8px;padding:10px;text-align:center;cursor:pointer;transition:all .15s;background:var(--w)}
+.et-tab:hover{border-color:var(--y);background:var(--yl)}
+.et-tab.on{border-color:var(--dark);background:var(--dark)}
+.et-tab.on .et-lbl{color:#fff}
+.et-icon{font-size:20px;display:block;margin-bottom:4px}
+.et-lbl{font-size:12px;font-weight:600;color:var(--tx)}
+.ef{margin-bottom:14px}
+.ef label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mt);margin-bottom:5px}
+.ef input,.ef select,.ef textarea{width:100%;border:1.5px solid var(--bd);border-radius:7px;padding:9px 13px;font-size:13px;color:var(--tx);outline:none;font-family:var(--f);background:var(--w)}
+.ef input:focus,.ef select:focus,.ef textarea:focus{border-color:var(--y)}
+.ef textarea{resize:none;height:80px;line-height:1.5}
+.entry-modal-footer{padding:16px 24px;border-top:1px solid var(--bd);display:flex;gap:8px;justify-content:flex-end}
+.hdr{background:var(--dark);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:200}
+.logo{display:flex;align-items:center;gap:10px;cursor:pointer}
+.logo-text{color:#fff;font-size:13px;font-weight:800;letter-spacing:.6px;line-height:1.25;text-transform:uppercase}
+.cy-pill{border:1.5px solid var(--y);color:var(--y);font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px}
+.av-wrap{display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.6);font-size:12px}
+.avt{width:28px;height:28px;border-radius:50%;background:#2A2A38;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center}
+/* STEPPER */
+.stepper-bar{background:var(--w);border-bottom:1px solid var(--bd);padding:14px 24px 0;position:sticky;top:56px;z-index:100}
+.stepper-inner{max-width:900px;margin:0 auto;display:flex;align-items:flex-start}
+.step{flex:1;display:flex;flex-direction:column;align-items:center;position:relative;cursor:pointer}
+.step:not(:last-child)::after{content:'';position:absolute;top:13px;left:50%;width:100%;height:2px;background:var(--bd);z-index:0}
+.step.done:not(:last-child)::after,.step.active:not(:last-child)::after{background:var(--y)}
+.step-dot{width:26px;height:26px;border-radius:50%;border:2px solid var(--bd);background:var(--w);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--mt);z-index:1;transition:all .2s}
+.step.done .step-dot{background:var(--y);border-color:var(--y);color:var(--dark)}
+.step.active .step-dot{background:var(--dark);border-color:var(--dark);color:#fff}
+.step.locked .step-dot{background:#F0F0EE;border-color:var(--bd);color:#bbb}
+.step-lbl{font-size:9px;color:var(--mt);margin-top:5px;text-align:center;font-weight:500;line-height:1.3;padding-bottom:10px;max-width:68px}
+.step.active .step-lbl{color:var(--tx);font-weight:700}
+.step.done .step-lbl{color:var(--ok)}
+.step.locked .step-lbl,.step.locked{color:#bbb;cursor:not-allowed}
+.wrap{max-width:900px;margin:0 auto;padding:28px 24px}
+/* BUTTONS */
+.btn{border:none;padding:9px 20px;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--f);transition:all .15s}
+.btn-p{background:var(--y);color:var(--dark)}.btn-p:hover{background:#e8a900}
+.btn-s{background:var(--w);color:var(--tx);border:1px solid var(--bd)}.btn-s:hover{background:var(--bg)}
+.btn-ok{background:var(--ok);color:#fff}.btn-ok:hover{background:#15803d}
+.btn-full{width:100%}
+/* LOGIN */
+.login-shell{background:#E8E8E6;min-height:100vh;display:flex;flex-direction:column}
+.login-tag{height:40px;display:flex;align-items:center;padding:0 28px;font-size:10px;font-weight:700;letter-spacing:1.4px;color:#888;text-transform:uppercase}
+.login-panel{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 20px}
+.card{background:var(--w);border-radius:12px;width:100%;max-width:320px;padding:36px 30px;text-align:center;box-shadow:0 2px 28px rgba(0,0,0,.1)}
+.card h1{font-size:20px;font-weight:700;color:var(--tx);letter-spacing:-.4px;margin-bottom:8px}
+.card-sub{font-size:13px;color:#888;line-height:1.65;margin-bottom:22px}
+.fld{text-align:left;margin-bottom:14px}
+.fld label{display:block;font-size:12px;font-weight:600;color:#555;margin-bottom:5px}
+.fld label span{color:var(--y)}
+.fld input{width:100%;border:1.5px solid #D5D5D5;border-radius:7px;padding:10px 13px;font-size:14px;color:var(--tx);outline:none;font-family:var(--f);transition:border .15s;background:#FAFAFA}
+.fld input:focus{border-color:var(--y);background:#fff}
+.fld input.err{border-color:var(--er)}
+.err-txt{font-size:11px;color:var(--er);margin-top:4px;display:none}.err-txt.on{display:block}
+.cta-btn{width:100%;border:none;border-radius:7px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--f);transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.cta-disabled{background:#E8E8E4;color:#bbb;cursor:not-allowed}
+.cta-ready{background:var(--y);color:var(--dark)}.cta-ready:hover{background:#e8a900}
+.cta-sending{background:#EEEEE8;color:#aaa;cursor:not-allowed}
+.cta-open{background:var(--y);color:var(--dark)}
+.spin{width:13px;height:13px;border:2px solid #bbb;border-top-color:#777;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.help-txt{font-size:12px;color:#aaa;margin-top:14px}
+.help-txt a{color:var(--y);text-decoration:none;font-weight:500}
+.email-icon-ring{width:54px;height:54px;border-radius:50%;background:var(--yl);border:2px solid var(--y);display:flex;align-items:center;justify-content:center;margin:0 auto 18px}
+/* DASHBOARD */
+.db-h1{font-size:22px;font-weight:700;color:var(--tx);letter-spacing:-.4px;margin-bottom:20px}
+.cycle-hdr-card{background:var(--dark);border-radius:12px;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.ct{color:#fff;font-size:15px;font-weight:600}.cp{color:var(--y);font-size:12px;margin-top:2px}
+/* INLINE STEPPER ON DASHBOARD */
+.db-stepper-card{background:var(--w);border:1px solid var(--bd);border-radius:12px;padding:22px 24px;margin-bottom:20px}
+.db-stepper-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mt);margin-bottom:16px}
+.db-stepper{display:flex;align-items:flex-start}
+.db-step{flex:1;display:flex;flex-direction:column;align-items:center;position:relative;cursor:pointer}
+.db-step:not(:last-child)::after{content:'';position:absolute;top:13px;left:50%;width:100%;height:2px;background:var(--bd);z-index:0}
+.db-step.dn:not(:last-child)::after,.db-step.ac:not(:last-child)::after{background:var(--y)}
+.db-dot{width:26px;height:26px;border-radius:50%;border:2px solid var(--bd);background:var(--w);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--mt);z-index:1;transition:all .2s}
+.db-step.dn .db-dot{background:var(--y);border-color:var(--y);color:var(--dark)}
+.db-step.ac .db-dot{background:var(--dark);border-color:var(--dark);color:#fff}
+.db-step.lk .db-dot{background:#F0F0EE;border-color:var(--bd);color:#bbb}
+.db-lbl{font-size:9px;color:var(--mt);margin-top:5px;text-align:center;font-weight:500;line-height:1.3;max-width:64px}
+.db-step.ac .db-lbl{color:var(--tx);font-weight:700}
+.db-step.dn .db-lbl{color:var(--ok)}
+.db-step.lk .db-lbl,.db-step.lk{color:#bbb;cursor:not-allowed}
+.db-cta{margin-top:18px;display:flex;align-items:center;justify-content:space-between;padding-top:16px;border-top:1px solid var(--bd);flex-wrap:wrap;gap:10px}
+.db-cta-txt{font-size:13px;color:var(--mt)}
+.db-cta-txt strong{color:var(--tx);font-weight:600}
+/* Previous cycles */
+.prev-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mt);margin:22px 0 10px}
+.prev-row{background:var(--w);border:1px solid var(--bd);border-radius:8px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.pr-name{font-size:13px;font-weight:500;color:var(--tx)}.pr-sub{font-size:11px;color:var(--mt);margin-top:2px}
+.gr{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.grA{background:#F0FDF4;color:var(--ok)}.grB{background:#EFF6FF;color:#2563EB}
+/* PAGE BADGES */
+.dg-badge{display:inline-flex;align-items:center;border:1.5px solid var(--tx);border-radius:20px;padding:4px 15px;font-size:12px;font-weight:600;color:var(--tx);margin-bottom:14px}
+.page-badge{display:inline-flex;align-items:center;border:1.5px solid var(--y);border-radius:20px;padding:5px 16px;font-size:13px;font-weight:700;color:var(--tx);margin-bottom:16px;background:var(--yl)}
+.sec-intro{font-size:13px;color:var(--mt);line-height:1.6;margin-bottom:20px}
+/* DOC GUIDE */
+.dg-intro{font-size:13px;color:var(--mt);line-height:1.75;margin-bottom:8px}
+.hr{border:none;border-top:1px solid var(--bd);margin:22px 0}
+.dg-sec{background:var(--w);border:1px solid var(--bd);border-radius:10px;padding:20px 24px;margin-bottom:12px}
+.dg-sec-hdr{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.dg-icon{width:38px;height:38px;border-radius:50%;background:var(--y);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.dg-sec-title{font-size:15px;font-weight:700;color:var(--tx)}
+.dg-sec-body{font-size:13px;color:var(--mt);line-height:1.75;margin-bottom:12px}
+.dg-def{border-left:3px solid var(--y);padding:9px 14px;margin-bottom:9px;background:#FAFAF8;border-radius:0 6px 6px 0}
+.dg-def:last-child{margin-bottom:0}
+.dg-def-t{font-size:13px;font-weight:700;color:var(--tx);margin-bottom:2px}
+.dg-def-b{font-size:13px;color:var(--mt);line-height:1.6}
+.dg-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;margin-top:4px}
+.dg-li{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--tx)}
+.dg-li::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--y);flex-shrink:0}
+/* KPI ACCORDION */
+.acc{background:var(--w);border:1px solid var(--bd);border-radius:10px;overflow:hidden;margin-bottom:20px}
+.acc-hdr{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+.acc-hdr:hover{background:#FAFAF8}
+.acc-title{font-size:14px;font-weight:700;color:var(--tx)}
+.acc-sub{font-size:12px;color:var(--mt);margin-top:2px}
+.acc-arrow{font-size:12px;color:var(--mt);transition:transform .2s}
+.acc-arrow.open{transform:rotate(180deg)}
+.acc-body{padding:4px 18px 20px;border-top:1px solid var(--bd)}
+.calc-formula{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:10px;align-items:center;margin:16px 0}
+.calc-box{background:#F5F5F2;border-radius:8px;padding:14px;text-align:center}
+.calc-box-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--mt);margin-bottom:6px}
+.calc-box-val{font-size:19px;font-weight:800;color:var(--tx)}
+.calc-box-sub{font-size:10px;color:var(--mt);margin-top:4px}
+.calc-op{font-size:24px;color:#ccc;text-align:center}
+.calc-tbl{width:100%;border-collapse:collapse;margin-bottom:18px;font-size:13px}
+.calc-tbl th{padding:8px 12px;font-size:11px;font-weight:700;color:var(--mt);text-align:left;border-bottom:2px solid var(--y)}
+.calc-tbl td{padding:11px 12px;color:var(--tx);border-bottom:1px solid var(--bd)}
+.calc-tbl tr:last-child td{border-bottom:none}
+.fpill{background:#EEEEE8;border-radius:20px;padding:3px 10px;font-size:11px;color:var(--tx)}
+.calc-ex{font-size:12px;color:var(--mt);text-align:right}
+.grade-lbl{font-size:12px;font-weight:700;color:var(--tx);margin-bottom:10px}
+.grade-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.g-box{border-radius:10px;padding:16px 8px;text-align:center}
+.g-box-A{background:#E8F5E9}.g-box-B{background:#E3F2FD}.g-box-C{background:#FFF3E0}.g-box-D{background:#FFEBEE}
+.g-grade{font-size:30px;font-weight:800;margin-bottom:4px}
+.g-box-A .g-grade{color:#2E7D32}.g-box-B .g-grade{color:#1565C0}.g-box-C .g-grade{color:#E65100}.g-box-D .g-grade{color:var(--er)}
+.g-name{font-size:11px;font-weight:600;color:var(--tx);margin-bottom:4px;line-height:1.3}
+.g-rng{font-size:11px;font-weight:700;color:var(--mt)}
+/* KPI TABLE */
+.obj-card{background:var(--w);border:1px solid var(--bd);border-radius:10px;overflow:hidden;margin-bottom:14px}
+.obj-hdr{background:var(--dark);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #222}
+.obj-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.4);white-space:nowrap}
+.obj-title{font-size:13px;font-weight:600;color:#fff}
+.kpi-hdr{display:grid;grid-template-columns:1fr 68px 90px 90px 84px 62px;gap:0;padding:8px 18px;background:#FAFAF8;border-bottom:1px solid var(--bd)}
+.kh{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--mt)}
+.kpi-row{display:grid;grid-template-columns:1fr 68px 90px 90px 84px 62px;gap:0;padding:12px 18px;border-bottom:1px solid var(--bd);align-items:center}
+.kpi-row.last{border-bottom:none}
+.kn{font-size:13px;color:var(--tx);font-weight:500}
+.kw{font-size:12px;font-weight:700;color:var(--dark);text-align:center;background:var(--yl);border-radius:20px;padding:2px 0;margin:0 8px}
+.kt{font-size:13px;color:var(--mt);text-align:center}
+.ki input{width:74px;text-align:center;border:1.5px solid var(--bd);border-radius:6px;padding:6px 8px;font-size:13px;color:var(--tx);outline:none;font-family:var(--f);transition:border .15s}
+.ki input:focus{border-color:var(--y)}
+.kpct{font-size:12px;color:var(--mt);text-align:center;font-weight:500}.kpct.v{color:var(--tx);font-weight:600}
+.gtag{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:5px;font-size:11px;font-weight:700}
+.gA{background:#F0FDF4;color:var(--ok)}.gB{background:#EFF6FF;color:#2563EB}.gC{background:#FFF3E0;color:#E65100}.gD{background:#FEF2F2;color:var(--er)}.gN{background:var(--bg);color:var(--mt)}
+.kpi-cmt{padding:8px 18px 12px;background:#FAFAF8;border-top:1px solid var(--bd)}
+.kpi-cmt label{font-size:10px;color:var(--mt);display:block;margin-bottom:4px}
+.kpi-cmt textarea{width:100%;border:1px solid var(--bd);border-radius:6px;padding:7px 10px;font-size:12px;resize:none;height:44px;background:var(--w);outline:none;font-family:var(--f)}
+.kpi-cmt textarea:focus{border-color:var(--y)}
+.extra-box{background:#FAFAFA;border:1.5px dashed var(--bd);border-radius:10px;padding:16px;margin-bottom:14px}
+.extra-note{font-size:12px;color:var(--mt);font-style:italic;line-height:1.6;background:var(--w);border:1px solid var(--bd);border-radius:6px;padding:9px 12px;margin-bottom:10px}
+.extra-inp{display:flex;gap:8px}
+.extra-inp input{flex:1;border:1px solid var(--bd);border-radius:6px;padding:7px 10px;font-size:13px;outline:none;font-family:var(--f)}
+.extra-inp input:focus{border-color:var(--y)}
+.extra-inp button{background:var(--w);border:1px solid var(--bd);border-radius:6px;padding:7px 12px;font-size:12px;cursor:pointer;color:var(--mt);font-family:var(--f)}
+.extra-inp button:hover{border-color:var(--y);color:var(--dark)}
+/* VB */
+.vb-card{background:var(--w);border:1px solid var(--bd);border-radius:10px;padding:18px;margin-bottom:10px}
+.vb-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
+.vb-name{font-size:14px;font-weight:600;color:var(--tx);margin-bottom:4px}
+.vb-desc{font-size:12px;color:var(--mt);margin-bottom:13px;line-height:1.55}
+.vb-pill{font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px;white-space:nowrap}
+.vbp-n{background:#F5F5F0;color:var(--mt)}.vbp-r{background:var(--yl);color:#7B5800}
+.r-row{display:flex;gap:5px}
+.r-btn{flex:1;padding:7px 3px;border:1.5px solid var(--bd);border-radius:7px;background:var(--w);cursor:pointer;text-align:center;transition:all .15s;font-family:var(--f)}
+.r-btn:hover{border-color:var(--y);background:var(--yl)}
+.r-btn.sel{border-color:var(--dark);background:var(--dark)}
+.r-lbl{font-size:9px;font-weight:600;color:var(--mt);display:block;line-height:1.2}
+.r-sc{font-size:13px;font-weight:700;color:var(--mt);display:block;margin-top:2px}
+.r-btn.sel .r-lbl,.r-btn.sel .r-sc{color:#fff}
+/* LEARNING */
+.lrn-hdr{display:grid;grid-template-columns:1fr 1fr 1fr 32px;gap:10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mt);background:var(--w);border:1px solid var(--bd);border-radius:8px;padding:10px 14px;margin-bottom:10px}
+.lrn-row{background:var(--w);border:1px solid var(--bd);border-radius:8px;padding:12px 14px;margin-bottom:8px;display:grid;grid-template-columns:1fr 1fr 1fr 32px;gap:10px;align-items:center}
+.lrn-inp{border:1.5px solid var(--bd);border-radius:6px;padding:7px 10px;font-size:13px;outline:none;font-family:var(--f);width:100%}
+.lrn-inp:focus{border-color:var(--y)}
+.rm-btn{width:28px;height:28px;border-radius:6px;border:1px solid var(--bd);background:var(--w);cursor:pointer;color:var(--mt);font-size:16px}
+.rm-btn:hover{background:#FEF2F2;border-color:var(--er);color:var(--er)}
+.add-btn{border:1.5px dashed var(--bd);border-radius:8px;padding:11px;width:100%;background:transparent;cursor:pointer;font-size:13px;color:var(--mt);font-family:var(--f);margin-bottom:14px}
+.add-btn:hover{border-color:var(--y);color:var(--dark);background:var(--yl)}
+/* SUMMARY */
+.summ-tbl{background:var(--w);border:1px solid var(--bd);border-radius:10px;overflow:hidden;margin-bottom:14px}
+.summ-tbl table{width:100%;border-collapse:collapse}
+.summ-tbl th{background:#FAFAF8;padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--mt);text-align:left;border-bottom:1px solid var(--bd)}
+.summ-tbl td{padding:13px 16px;font-size:13px;color:var(--tx);border-bottom:1px solid var(--bd)}
+.summ-tbl tr:last-child td{border-bottom:none}
+.pending-grade{background:#F7F7F5;border:1px dashed var(--bd);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--mt);margin-bottom:4px}
+.notice{background:var(--yl);border:1px solid #FFE082;border-radius:8px;padding:12px 16px;font-size:13px;color:#7B5800;margin-bottom:18px;line-height:1.55}
+/* FORM FOOTER */
+.ff{display:flex;justify-content:space-between;align-items:center;padding-top:20px;border-top:1px solid var(--bd);margin-top:20px}
+.foot-scores{display:flex;gap:10px}
+.fscore{background:var(--w);border:1px solid var(--bd);border-radius:7px;padding:7px 14px;text-align:center}
+.fsv{font-size:18px;font-weight:700;color:var(--tx)}.fsl{font-size:10px;color:var(--mt)}
+.foot-btns{display:flex;gap:8px}
+.step-info{font-size:12px;color:var(--mt)}
+/* CONFIRM */
+.confirm-page{min-height:calc(100vh - 56px);display:flex;align-items:center;justify-content:center;background:var(--bg);padding:40px 20px}
+.confirm-card{background:var(--w);border:1px solid var(--bd);border-radius:14px;max-width:420px;width:100%;padding:42px 34px;text-align:center}
+.check-ring{width:66px;height:66px;border-radius:50%;background:#F0FDF4;border:2px solid var(--ok);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:28px}
+.confirm-card h2{font-size:21px;font-weight:700;color:var(--tx);letter-spacing:-.3px;margin-bottom:8px}
+.confirm-card p{font-size:13px;color:var(--mt);line-height:1.65;margin-bottom:22px}
+.conf-detail{background:#FAFAF8;border:1px solid var(--bd);border-radius:8px;padding:14px 16px;text-align:left;margin-bottom:22px}
+.cd{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--bd)}
+.cd:last-child{border-bottom:none}
+.cd .cl{color:var(--mt)}.cd .cv{font-weight:700;color:var(--tx)}
+</style>
+</head>
+<body>
+
+<!-- LOGIN HEADER -->
+<div id="loginHdr">
+  <div style="background:#1A1A1A;padding:13px 28px;display:flex;align-items:center;justify-content:space-between">
+    <div class="logo">
+      <svg width="32" height="32" viewBox="0 0 100 100" fill="none"><path d="M28 6 L72 6 L94 28 L94 72 L72 94 L28 94 L6 72 L6 28 Z" stroke="white" stroke-width="5" fill="none"/><path d="M50 18 L76 34 L76 66 L50 82 L24 66 L24 34 Z" stroke="white" stroke-width="4" fill="none"/></svg>
+      <div class="logo-text">BIG CABAL<br>MEDIA</div>
+    </div>
+    <div class="cy-pill">H1 2026 Cycle · Jan–June</div>
+  </div>
+</div>
+
+<!-- APP HEADER -->
+<div id="appHdr" style="display:none">
+  <div class="hdr" style="position:relative">
+    <div class="logo" onclick="goHome()">
+      <svg width="28" height="28" viewBox="0 0 100 100" fill="none"><path d="M28 6 L72 6 L94 28 L94 72 L72 94 L28 94 L6 72 L6 28 Z" stroke="white" stroke-width="5" fill="none"/><path d="M50 18 L76 34 L76 66 L50 82 L24 66 L24 34 Z" stroke="white" stroke-width="4" fill="none"/></svg>
+      <div class="logo-text">BIG CABAL<br>MEDIA</div>
+    </div>
+    <!-- Tabs absolutely centred -->
+    <div class="hdr-tabs" style="position:absolute;left:50%;transform:translateX(-50%)">
+      <button class="hdr-tab-btn on" id="tabAppraisal" onclick="switchTab('appraisal')">My Appraisal</button>
+      <button class="hdr-tab-btn" id="tabLogbook" onclick="switchTab('logbook')">My Logbook</button>
+    </div>
+    <!-- Cycle + avatar grouped right -->
+    <div style="display:flex;align-items:center;gap:10px;margin-left:auto">
+      <div class="cy-pill">H1 2026 · Jan–Jun</div>
+      <div class="av-wrap"><div class="avt" id="appAv">RO</div><span id="appName">Rhoda Okafor</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- STEPPER (form pages) -->
+<div id="stepperWrap" style="display:none">
+  <div class="stepper-bar"><div class="stepper-inner" id="stepperInner"></div></div>
+</div>
+
+<!-- S0: LOGIN -->
+<div class="scr on" id="s0">
+  <div class="login-shell">
+    <div class="login-tag">LOGIN</div>
+    <div class="login-panel">
+      <div class="card" id="cardA">
+        <h1>Appraisal Portal</h1>
+        <p class="card-sub">Sign in with your BCM work email and we'll send you a secure login link</p>
+        <div class="fld">
+          <label>Work Email <span>*</span></label>
+          <input type="email" id="emailInp" placeholder="rhoda@bigcabal.com" oninput="onEmailInput()" onkeydown="if(event.key==='Enter')doSend()"/>
+          <div class="err-txt" id="errTxt">Please enter a valid BCM email address.</div>
+        </div>
+        <button class="cta-btn cta-disabled" id="sendBtn" disabled onclick="doSend()">Send Login Link</button>
+        <div class="help-txt">Having trouble? Contact <a href="mailto:hr@bigcabal.com">HR Support</a></div>
+      </div>
+      <div class="card" id="cardB" style="display:none">
+        <div class="email-icon-ring">
+          <svg width="22" height="18" viewBox="0 0 26 20" fill="none"><rect x="1" y="1" width="24" height="18" rx="3" stroke="#FCB900" stroke-width="1.8"/><path d="M1 4l12 8 12-8" stroke="#FCB900" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <h1 style="font-size:18px">Check your email</h1>
+        <p class="card-sub" style="margin-bottom:6px">We sent a secure link to</p>
+        <p style="font-weight:700;color:var(--tx);font-size:14px;margin-bottom:16px" id="sentEmail">—</p>
+        <div style="background:#FAFAFA;border:1px solid var(--bd);border-radius:8px;padding:11px 14px;font-size:12px;color:#999;line-height:1.65;text-align:left;margin-bottom:20px">
+          Link expires in <strong style="color:var(--tx)">15 minutes</strong>. Check spam if needed. Do not share this link.
+        </div>
+        <button class="cta-btn cta-sending" id="ctaB" disabled><div class="spin"></div>Sending link →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S1: DASHBOARD — merged with inline stepper -->
+<div class="scr" id="s1">
+  <div class="wrap">
+    <div class="db-h1">Good morning, <span id="dbFirst">Rhoda</span> 👋</div>
+
+    <!-- Last Appraisal Recommendation -->
+    <div style="margin-bottom:24px">
+      <h2 style="font-size:18px;font-weight:700;color:var(--tx);letter-spacing:-.3px;margin-bottom:6px">Last Appraisal Recommendation</h2>
+      <p style="font-size:14px;color:var(--mt);line-height:1.6">Your H2 2025 appraisal recommendation from Aderemi (Design Lead): <strong style="color:var(--tx)">Good performance</strong></p>
+    </div>
+
+    <!-- Urgency countdown banner -->
+    <div style="background:#FFFBEB;border:1.5px solid #FFE082;border-radius:12px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+      <div>
+        <div style="color:#A07820;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">H1 2026 Appraisal Cycle · Jan – Jun 2026</div>
+        <div style="color:var(--tx);font-size:16px;font-weight:500;margin-bottom:4px">Your self-review is open — complete before the deadline</div>
+        <div style="color:var(--mt);font-size:13px">Submission deadline: <strong style="color:#B45309">27 June 2026</strong></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex-shrink:0">
+        <!-- Days tile -->
+        <div style="text-align:center">
+          <div style="background:transparent;border:1.5px solid #FFD060;border-radius:8px;padding:10px 16px;min-width:60px">
+            <div style="font-size:26px;font-weight:800;color:#B45309;line-height:1" id="cdDays">46</div>
+            <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#A07820;margin-top:3px">days</div>
+          </div>
+        </div>
+        <div style="font-size:20px;color:#C9A84C;font-weight:300">:</div>
+        <!-- Hours tile -->
+        <div style="text-align:center">
+          <div style="background:transparent;border:1.5px solid #FFD060;border-radius:8px;padding:10px 16px;min-width:60px">
+            <div style="font-size:26px;font-weight:800;color:#B45309;line-height:1" id="cdHours">14</div>
+            <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#A07820;margin-top:3px">hours</div>
+          </div>
+        </div>
+        <div style="font-size:20px;color:#C9A84C;font-weight:300">:</div>
+        <!-- Mins tile -->
+        <div style="text-align:center">
+          <div style="background:transparent;border:1.5px solid #FFD060;border-radius:8px;padding:10px 16px;min-width:60px">
+            <div style="font-size:26px;font-weight:800;color:#B45309;line-height:1" id="cdMins">32</div>
+            <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#A07820;margin-top:3px">mins</div>
+          </div>
+        </div>
+        <button class="btn btn-p" onclick="goStep(1)" style="margin-left:8px">Start self-review →</button>
+      </div>
+    </div>
+
+    <!-- Inline progress stepper — replaces action banner -->
+    <div class="db-stepper-card">
+      <div class="db-stepper-label">Your appraisal progress</div>
+      <div class="db-stepper">
+        <div class="db-step dn"><div class="db-dot">✓</div><div class="db-lbl">KPI Setup</div></div>
+        <div class="db-step ac" onclick="goStep(1)"><div class="db-dot">2</div><div class="db-lbl">Document Guide</div></div>
+        <div class="db-step" onclick="goStep(2)"><div class="db-dot">3</div><div class="db-lbl">Key Performance Indicator</div></div>
+        <div class="db-step" onclick="goStep(3)"><div class="db-dot">4</div><div class="db-lbl">Values &amp; Behaviour</div></div>
+        <div class="db-step" onclick="goStep(4)"><div class="db-dot">5</div><div class="db-lbl">Learning &amp; Development</div></div>
+        <div class="db-step lk"><div class="db-dot">🔒</div><div class="db-lbl">Manager Review</div></div>
+        <div class="db-step" onclick="goStep(6)"><div class="db-dot">7</div><div class="db-lbl">Appraisal Summary</div></div>
+      </div>
+      <div class="db-cta">
+        <span class="db-cta-txt">Next: <strong>Document Guide</strong> — read before filling your KPIs</span>
+        <button class="btn btn-p" onclick="goStep(1)">Continue →</button>
+      </div>
+    </div>
+
+    <!-- Previous cycles -->
+    <div class="prev-lbl">Previous Cycles</div>
+    <div class="prev-row">
+      <div><div class="pr-name">H2 2025 Appraisal Cycle</div><div class="pr-sub">July – December 2025 · Completed 18 Dec 2025</div></div>
+      <div style="display:flex;align-items:center;gap:10px"><div class="gr grB">B</div><span style="font-size:12px;color:var(--mt);cursor:pointer">View →</span></div>
+    </div>
+    <div class="prev-row">
+      <div><div class="pr-name">H1 2025 Appraisal Cycle</div><div class="pr-sub">January – June 2025 · Completed 2 Jul 2025</div></div>
+      <div style="display:flex;align-items:center;gap:10px"><div class="gr grA">A</div><span style="font-size:12px;color:var(--mt);cursor:pointer">View →</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- S2: DOCUMENT GUIDE — black badge (original style) -->
+<div class="scr" id="s2">
+  <div class="wrap">
+    <div class="dg-badge">Document Guide</div>
+    <p class="dg-intro">This appraisal document is designed to increase the fairness in our appraisal process.</p>
+    <p class="dg-intro">It is expected that every team lead sets KPIs for their team members at the beginning of every appraisal cycle which forms the basis for the work done during the period.</p>
+    <hr class="hr"/>
+    <div class="dg-sec">
+      <div class="dg-sec-hdr"><div class="dg-icon">📊</div><div class="dg-sec-title">Section 1 — KPI Review</div></div>
+      <p class="dg-sec-body">This contains the KPIs for each team member. KPIs per objective should be between 2–4. Some terms explained below:</p>
+      <div class="dg-def"><div class="dg-def-t">Functional Objectives</div><div class="dg-def-b">This is related to your departmental objectives.</div></div>
+      <div class="dg-def"><div class="dg-def-t">Key Performance Indicators (KPIs)</div><div class="dg-def-b">A quantifiable measure of performance over a period of time.</div></div>
+      <div class="dg-def"><div class="dg-def-t">Weights</div><div class="dg-def-b">Assigns the level of importance of each KPI to the overall outcome. Total must be 100%.</div></div>
+    </div>
+    <div class="dg-sec">
+      <div class="dg-sec-hdr"><div class="dg-icon">😊</div><div class="dg-sec-title">Section 2 — Values &amp; Behaviours</div></div>
+      <p class="dg-sec-body">This section measures critical aspects of BCM's culture and values. Six fixed behaviours are rated by you and your manager.</p>
+      <div class="dg-grid">
+        <div class="dg-li">Punching above their weight</div><div class="dg-li">Treat others well</div>
+        <div class="dg-li">Solving the hard problems</div><div class="dg-li">Ability to work in a team</div>
+        <div class="dg-li">Delivering high quality work consistently</div><div class="dg-li">Never stop learning</div>
+      </div>
+    </div>
+    <div class="ff"><div class="step-info">Step 2 of 7</div><div class="foot-btns"><button class="btn btn-s" onclick="goHome()">← Back</button><button class="btn btn-p" onclick="goStep(2)">Key Performance Indicator →</button></div></div>
+  </div>
+</div>
+
+<!-- S3: KPI — yellow badge -->
+<div class="scr" id="s3">
+  <div class="wrap">
+    <div class="page-badge">Key Performance Indicator</div>
+    <p class="sec-intro">Enter your actual result for each KPI. Achievement %, weighted score and grade update automatically as you type.</p>
+    <div class="acc">
+      <div class="acc-hdr" onclick="toggleAcc()">
+        <div><div class="acc-title">How your KPI score is calculated</div><div class="acc-sub">Tap to collapse the formula and grade thresholds</div></div>
+        <div class="acc-arrow open" id="accArrow">▲</div>
+      </div>
+      <div class="acc-body" id="accBody">
+        <div class="calc-formula">
+          <div class="calc-box"><div class="calc-box-lbl">Your Actual</div><div class="calc-box-val">e.g 4,200</div><div class="calc-box-sub">What you achieved</div></div>
+          <div class="calc-op">÷</div>
+          <div class="calc-box"><div class="calc-box-lbl">Your Target</div><div class="calc-box-val">e.g 5,000</div><div class="calc-box-sub">What you aimed for</div></div>
+          <div class="calc-op">×</div>
+          <div class="calc-box"><div class="calc-box-lbl">KPI Weight</div><div class="calc-box-val">25%</div><div class="calc-box-sub">KPI's share of your score</div></div>
+        </div>
+        <table class="calc-tbl">
+          <thead><tr><th>What the system does</th><th>Formula</th><th style="text-align:right">Example result</th></tr></thead>
+          <tbody>
+            <tr><td>Step 1. Achievement %</td><td><span class="fpill">Actual ÷ Target × 100</span></td><td class="calc-ex">4,200 ÷ 5,000 × 100 = 84%</td></tr>
+            <tr><td>Step 2. Weighted result</td><td><span class="fpill">Achievement % × KPI weight</span></td><td class="calc-ex">84% × 25% = 21% of your KPI</td></tr>
+            <tr><td>Step 3. KPI Total</td><td><span class="fpill">Sum of all weighted results</span></td><td class="calc-ex">All KPIs added together (max 100%)</td></tr>
+            <tr><td>Final combined score</td><td><span class="fpill">KPI Total + Value Total ÷ 2</span></td><td class="calc-ex">Average of KPI and V&amp;B sections</td></tr>
+          </tbody>
+        </table>
+        <div class="grade-lbl">Grade thresholds — applied to your final combined score</div>
+        <div class="grade-grid">
+          <div class="g-box g-box-A"><div class="g-grade">A</div><div class="g-name">Exceeds Expectation</div><div class="g-rng">&gt; 90%</div></div>
+          <div class="g-box g-box-B"><div class="g-grade">B</div><div class="g-name">Meets Expectation</div><div class="g-rng">80%–89%</div></div>
+          <div class="g-box g-box-C"><div class="g-grade">C</div><div class="g-name">Partially Meets</div><div class="g-rng">60%–79%</div></div>
+          <div class="g-box g-box-D"><div class="g-grade">D</div><div class="g-name">Below Expectation</div><div class="g-rng">0%–59%</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="obj-card">
+      <div class="obj-hdr" style="display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:11px;font-weight:800;color:var(--y);background:rgba(252,185,0,.15);border-radius:20px;padding:3px 12px;white-space:nowrap">75%</span>
+          <span class="obj-label">Objective 1</span>
+          <span class="obj-title">Grow BCM's social media presence and engagement</span>
+        </div>
+      </div>
+      <div class="kpi-hdr"><div class="kh">KPI</div><div class="kh" style="text-align:center">Weight</div><div class="kh" style="text-align:center">Target</div><div class="kh" style="text-align:center">Actual</div><div class="kh" style="text-align:center">Achieved</div><div class="kh" style="text-align:center">Grade</div></div>
+      <div class="kpi-row"><div class="kn">Design and document 10+ new component blocks</div><div class="kw">30%</div><div class="kt">10</div><div class="ki"><input type="number" id="k0" placeholder="—" oninput="kCalc(0,10,30)"/></div><div class="kpct" id="kp0">—</div><div style="text-align:center"><span class="gtag gN" id="kg0">—</span></div></div>
+      <div class="kpi-cmt"><label>Comment (optional)</label><textarea placeholder="Add context about this KPI…"></textarea></div>
+      <div class="kpi-row"><div class="kn">Average post engagement rate</div><div class="kw">25%</div><div class="kt">4.5%</div><div class="ki"><input type="number" id="k1" step="0.1" placeholder="—" oninput="kCalc(1,4.5,25)"/></div><div class="kpct" id="kp1">—</div><div style="text-align:center"><span class="gtag gN" id="kg1">—</span></div></div>
+      <div class="kpi-cmt"><label>Comment (optional)</label><textarea placeholder="Add context about this KPI…"></textarea></div>
+      <div class="kpi-row last"><div class="kn">Content calendar adherence</div><div class="kw">20%</div><div class="kt">90%</div><div class="ki"><input type="number" id="k2" placeholder="—" oninput="kCalc(2,90,20)"/></div><div class="kpct" id="kp2">—</div><div style="text-align:center"><span class="gtag gN" id="kg2">—</span></div></div>
+      <div class="kpi-cmt"><label>Comment (optional)</label><textarea placeholder="Add context about this KPI…"></textarea></div>
+    </div>
+
+    <div class="obj-card">
+      <div class="obj-hdr" style="display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:11px;font-weight:800;color:var(--y);background:rgba(252,185,0,.15);border-radius:20px;padding:3px 12px;white-space:nowrap">25%</span>
+          <span class="obj-label">Objective 2</span>
+          <span class="obj-title">Contribute to content strategy and brand consistency</span>
+        </div>
+      </div>
+      <div class="kpi-hdr"><div class="kh">KPI</div><div class="kh" style="text-align:center">Weight</div><div class="kh" style="text-align:center">Target</div><div class="kh" style="text-align:center">Actual</div><div class="kh" style="text-align:center">Achieved</div><div class="kh" style="text-align:center">Grade</div></div>
+      <div class="kpi-row last"><div class="kn">Monthly content reports submitted</div><div class="kw">25%</div><div class="kt">6</div><div class="ki"><input type="number" id="k3" placeholder="—" oninput="kCalc(3,6,25)"/></div><div class="kpct" id="kp3">—</div><div style="text-align:center"><span class="gtag gN" id="kg3">—</span></div></div>
+      <div class="kpi-cmt"><label>Comment (optional)</label><textarea placeholder="Add context about this KPI…"></textarea></div>
+    </div>
+
+    <div class="extra-box">
+      <div style="font-size:13px;font-weight:600;color:var(--tx);margin-bottom:7px">Extra Projects (optional)</div>
+      <div class="extra-note">These are additional projects completed outside your defined KPIs. They are recorded for context and do not affect your score.</div>
+      <div id="epList" style="margin-bottom:8px"></div>
+      <button class="add-btn" onclick="addExtra()" style="margin-bottom:0">+ Add extra project</button>
+    </div>
+
+    <div class="ff">
+      <div class="foot-scores"><div class="fscore"><div class="fsv" id="kpiTotal">—</div><div class="fsl">KPI score</div></div><div class="fscore"><div class="fsv" id="kpiGrade">—</div><div class="fsl">Grade</div></div></div>
+      <div class="foot-btns"><button class="btn btn-s" onclick="goStep(1)">← Back</button><button class="btn btn-s">Save draft</button><button class="btn btn-p" onclick="goStep(3)">Values &amp; Behaviour →</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- S4: VALUES & BEHAVIOUR — yellow badge -->
+<div class="scr" id="s4">
+  <div class="wrap">
+    <div class="page-badge">Values &amp; Behaviour</div>
+    <p class="sec-intro">Rate yourself on each of BCM's six core behaviours. Select the option that best reflects your performance this cycle.</p>
+    <div id="vbList"></div>
+    <div class="ff">
+      <div class="foot-scores"><div class="fscore"><div class="fsv" id="vbTotal">—</div><div class="fsl">V&amp;B score</div></div></div>
+      <div class="foot-btns"><button class="btn btn-s" onclick="goStep(2)">← Back</button><button class="btn btn-p" onclick="goStep(4)">Learning &amp; Development →</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- S5: LEARNING & DEVELOPMENT — yellow badge -->
+<div class="scr" id="s5">
+  <div class="wrap">
+    <div class="page-badge">Learning &amp; Development</div>
+    <p class="sec-intro">Log any courses, training or development activities from this cycle. Your manager will co-sign these.</p>
+    <div class="lrn-hdr"><div>Course / Activity</div><div>Platform / Provider</div><div>Business Application</div><div></div></div>
+    <div id="lrnList"></div>
+    <button class="add-btn" onclick="addLrn()">+ Add learning activity</button>
+    <div class="ff">
+      <div class="step-info">Step 5 of 7</div>
+      <div class="foot-btns"><button class="btn btn-s" onclick="goStep(3)">← Back</button><button class="btn btn-p" onclick="goStep(6)">Appraisal Summary →</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- S6: APPRAISAL SUMMARY — yellow badge -->
+<div class="scr" id="s6">
+  <div class="wrap">
+    <div class="page-badge">Appraisal Summary</div>
+    <p class="sec-intro">Review your self-scores before submitting. You cannot make changes after submission.</p>
+    <div class="notice">📋 Your scores are shown below. Your <strong>final grade</strong> will only be calculated after your manager completes their review and HR marks the discussion as held.</div>
+    <div class="summ-tbl"><table>
+      <thead><tr><th>Section</th><th style="text-align:center">Your score</th><th style="text-align:center">Manager score</th></tr></thead>
+      <tbody>
+        <tr><td>Values &amp; Behaviours</td><td style="text-align:center;font-weight:600" id="sumVB">—</td><td style="text-align:center;color:var(--mt)">Pending</td></tr>
+        <tr><td>Key Performance Indicators</td><td style="text-align:center;font-weight:600" id="sumKPI">—</td><td style="text-align:center;color:var(--mt)">Pending</td></tr>
+        <tr><td style="font-weight:600">Average score</td><td style="text-align:center;font-weight:700" id="sumAvg">—</td><td style="text-align:center;color:var(--mt)">Pending</td></tr>
+      </tbody>
+    </table></div>
+    <div class="pending-grade">🔒 <span><strong>Final grade</strong> — available after manager review and discussion phase are complete</span></div>
+    <div class="ff" style="margin-top:18px">
+      <div class="step-info">Step 7 of 7</div>
+      <div class="foot-btns"><button class="btn btn-s" onclick="goStep(4)">← Back</button><button class="btn btn-s">Save draft</button><button class="btn btn-ok" onclick="showSubmitModal()">Submit self-review</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- S7: CONFIRMATION -->
+<div class="scr" id="s7">
+  <div class="confirm-page">
+    <div class="confirm-card">
+      <div class="check-ring">✓</div>
+      <h2>Self-review submitted</h2>
+      <p>Aderemi (Design Lead) has been notified and will complete their review shortly. You'll receive an email when your results are ready.</p>
+      <div class="conf-detail">
+        <div class="cd"><span class="cl">Submitted by</span><span class="cv" id="confName">Rhoda Okafor</span></div>
+        <div class="cd"><span class="cl">Cycle</span><span class="cv">H1 2026 Appraisal</span></div>
+        <div class="cd"><span class="cl">KPI score (self)</span><span class="cv" id="confKPI">—</span></div>
+        <div class="cd"><span class="cl">V&amp;B score (self)</span><span class="cv" id="confVB">—</span></div>
+        <div class="cd"><span class="cl">Final grade</span><span class="cv" style="color:var(--mt);font-weight:500">Pending manager review</span></div>
+        <div class="cd"><span class="cl">Next step</span><span class="cv">Manager review</span></div>
+      </div>
+      <button class="btn btn-p btn-full" onclick="goHome()">← Back to dashboard</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ LOGBOOK SCREEN ════ -->
+<div class="scr" id="sLogbook">
+  <div class="wrap" style="max-width:780px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+      <div>
+        <h1 style="font-size:22px;font-weight:700;color:var(--tx);letter-spacing:-.4px">My Logbook</h1>
+        <p style="font-size:13px;color:var(--mt);margin-top:3px">Track your work, wins and learning throughout the year.</p>
+      </div>
+      <button class="btn btn-p" onclick="openNewEntry()">+ New entry</button>
+    </div>
+    <!-- Stats -->
+    <div class="lb-stats">
+      <div class="lb-stat"><div class="lb-stat-v" id="lbCountWork">4</div><div class="lb-stat-l">Work logs</div></div>
+      <div class="lb-stat"><div class="lb-stat-v" id="lbCountWin" style="color:var(--ok)">3</div><div class="lb-stat-l">Wins recorded</div></div>
+      <div class="lb-stat"><div class="lb-stat-v" id="lbCountLearn" style="color:#D97706">2</div><div class="lb-stat-l">Learning entries</div></div>
+    </div>
+    <!-- Filters -->
+    <div class="lb-filter-row">
+      <input class="lb-srch" placeholder="Search entries…" oninput="filterLb()"/>
+      <select class="lb-fsel" id="lbTypeFilter" onchange="filterLb()">
+        <option value="">All types</option>
+        <option value="Work Log">Work Log</option>
+        <option value="Win">Win</option>
+        <option value="Learning">Learning</option>
+      </select>
+      <select class="lb-fsel" id="lbMonthFilter" onchange="filterLb()">
+        <option value="">All months</option>
+        <option>January</option><option>February</option><option>March</option>
+        <option>April</option><option>May</option><option>June</option>
+      </select>
+    </div>
+    <!-- Entry list -->
+    <div id="lbList"></div>
+  </div>
+</div>
+
+<!-- ════ SUBMIT CONFIRMATION MODAL ════ -->
+<div class="modal-overlay hidden" id="submitModal">
+  <div class="modal-box">
+    <div class="modal-icon">⚠️</div>
+    <h2>Ready to submit?</h2>
+    <p>Once your self-review is submitted, <strong>you cannot make any changes</strong>. Your manager will be notified to begin their review.</p>
+    <p style="font-size:12px;color:var(--er);background:#FEF2F2;border-radius:7px;padding:10px 13px;margin-bottom:22px;text-align:left">Please review all sections before confirming. Incomplete KPI scores or unrated behaviours will appear as zero.</p>
+    <div class="modal-btns">
+      <button class="btn btn-s" onclick="closeSubmitModal()">Go back and review</button>
+      <button class="btn btn-ok" onclick="confirmSubmit()">Yes, submit now</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ NEW ENTRY MODAL ════ -->
+<div class="modal-overlay hidden" id="newEntryModal">
+  <div class="entry-modal">
+    <div class="entry-modal-hdr">
+      <h2>New logbook entry</h2>
+      <button class="modal-close" onclick="closeNewEntry()">×</button>
+    </div>
+    <div class="entry-modal-body">
+      <!-- Entry type -->
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mt);margin-bottom:8px">Entry type</div>
+      <div class="entry-type-tabs">
+        <div class="et-tab on" id="etWork" onclick="setEntryType('Work Log')"><span class="et-icon">📋</span><span class="et-lbl">Work Log</span></div>
+        <div class="et-tab" id="etWin" onclick="setEntryType('Win')"><span class="et-icon">🏆</span><span class="et-lbl">Win</span></div>
+        <div class="et-tab" id="etLearn" onclick="setEntryType('Learning')"><span class="et-icon">📚</span><span class="et-lbl">Learning</span></div>
+      </div>
+      <div class="ef"><label>Title <span style="color:var(--er)">*</span></label><input id="efTitle" placeholder="e.g. Completed Instagram content calendar for Q2"/></div>
+      <div class="ef"><label>Date</label><input type="date" id="efDate"/></div>
+      <div class="ef"><label>Description</label><textarea id="efDesc" placeholder="What did you do, achieve or learn? Include any results or outcomes…"></textarea></div>
+      <div class="ef" id="efKpiWrap"><label>Related KPI (optional)</label>
+        <select id="efKpi">
+          <option value="">Not linked to a KPI</option>
+          <option>Net new Instagram followers</option>
+          <option>Average post engagement rate</option>
+          <option>Content calendar adherence</option>
+          <option>Monthly content reports submitted</option>
+        </select>
+      </div>
+      <!-- Win screenshot upload (shown only for Win type) -->
+      <div class="ef" id="efImageWrap" style="display:none">
+        <label>Screenshot / evidence (optional)</label>
+        <div id="efUploadZone" style="border:2px dashed var(--bd);border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:all .15s" onclick="document.getElementById('efImageInp').click()" ondragover="event.preventDefault();this.style.borderColor='var(--y)';this.style.background='var(--yl)'" ondragleave="this.style.borderColor='var(--bd)';this.style.background=''" ondrop="handleImgDrop(event)">
+          <div style="font-size:24px;margin-bottom:6px">📸</div>
+          <div style="font-size:13px;font-weight:600;color:var(--tx);margin-bottom:2px">Click to upload or drag &amp; drop</div>
+          <div style="font-size:11px;color:var(--mt)">PNG, JPG or GIF — max 5MB</div>
+          <input type="file" id="efImageInp" accept="image/*" style="display:none" onchange="handleImgSelect(this)"/>
+        </div>
+        <div id="efImagePreview" style="display:none;margin-top:8px;position:relative">
+          <img id="efImgThumb" style="width:100%;max-height:160px;object-fit:cover;border-radius:7px;border:1px solid var(--bd)"/>
+          <button onclick="clearImg()" style="position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;border:none;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center">×</button>
+        </div>
+      </div>
+    </div>
+    <div class="entry-modal-footer">
+      <button class="btn btn-s" onclick="closeNewEntry()">Cancel</button>
+      <button class="btn btn-p" onclick="saveEntry()">Save entry</button>
+    </div>
+  </div>
+</div>
+<script>
+const st = { kpi:[0,0,0,0], vb:{} };
+const steps = [
+  {label:'KPI Setup',screen:null},
+  {label:'Document Guide',screen:'s2'},
+  {label:'Key Performance Indicator',screen:'s3'},
+  {label:'Values & Behaviour',screen:'s4'},
+  {label:'Learning & Development',screen:'s5'},
+  {label:'Manager Review',screen:null,locked:true},
+  {label:'Appraisal Summary',screen:'s6'},
+];
+
+function buildStepper(activeIdx) {
+  const c = document.getElementById('stepperInner'); c.innerHTML = '';
+  steps.forEach((s, i) => {
+    const div = document.createElement('div');
+    let cls = 'step';
+    if (i < activeIdx) cls += ' done';
+    else if (i === activeIdx) cls += ' active';
+    else if (s.locked) cls += ' locked';
+    div.className = cls;
+    const dot = i < activeIdx ? '✓' : s.locked ? '🔒' : (i+1).toString();
+    div.innerHTML = `<div class="step-dot">${dot}</div><div class="step-lbl">${s.label}</div>`;
+    if (!s.locked && s.screen && i !== activeIdx) div.addEventListener('click', () => goStep(i));
+    c.appendChild(div);
+  });
+}
+
+function goStep(idx) {
+  document.querySelectorAll('.scr').forEach(s => s.classList.remove('on'));
+  if (idx <= 0) { goHome(); return; }
+  const s = steps[idx];
+  if (s && s.locked) return;
+  const scr = s && s.screen ? s.screen : 's1';
+  document.getElementById(scr).classList.add('on');
+  document.getElementById('stepperWrap').style.display = 'block';
+  buildStepper(idx);
+  if (scr === 's6') updSummary();
+  window.scrollTo(0, 0);
+}
+
+function goHome() {
+  document.querySelectorAll('.scr').forEach(s => s.classList.remove('on'));
+  document.getElementById('s1').classList.add('on');
+  document.getElementById('stepperWrap').style.display = 'none';
+  window.scrollTo(0, 0);
+}
+
+// LOGIN — button active only once @ is present
+function onEmailInput() {
+  const v = document.getElementById('emailInp').value;
+  const btn = document.getElementById('sendBtn');
+  const hasAt = v.includes('@');
+  btn.disabled = !hasAt;
+  btn.className = 'cta-btn ' + (hasAt ? 'cta-ready' : 'cta-disabled');
+  document.getElementById('errTxt').classList.remove('on');
+  document.getElementById('emailInp').classList.remove('err');
+}
+
+function cap(s) { return s ? s[0].toUpperCase() + s.slice(1) : ''; }
+
+function doSend() {
+  const inp = document.getElementById('emailInp'), v = inp.value.trim();
+  if (!v || !v.includes('@') || !v.includes('.')) {
+    document.getElementById('errTxt').classList.add('on'); inp.classList.add('err'); return;
+  }
+  const parts = v.split('@')[0].split('.');
+  const first = cap(parts[0] || 'User'), last = cap(parts[1] || '');
+  const full = first + (last ? ' ' + last : '');
+  const init = (first[0] || '') + (last[0] || first[1] || '');
+  document.getElementById('dbFirst').textContent = first;
+  document.getElementById('appName').textContent = full;
+  document.getElementById('appAv').textContent = init;
+  document.getElementById('confName').textContent = full;
+  document.getElementById('sentEmail').textContent = v;
+  document.getElementById('cardA').style.display = 'none';
+  document.getElementById('cardB').style.display = 'block';
+  setTimeout(() => {
+    const btn = document.getElementById('ctaB');
+    btn.disabled = false; btn.className = 'cta-btn cta-open'; btn.innerHTML = 'Open Email App';
+    btn.onclick = () => {
+      document.getElementById('s0').classList.remove('on');
+      document.getElementById('loginHdr').style.display = 'none';
+      document.getElementById('appHdr').style.display = 'block';
+      document.getElementById('s1').classList.add('on');
+      window.scrollTo(0, 0);
+    };
+  }, 1400);
+}
+
+let accOpen = true;
+function toggleAcc() {
+  accOpen = !accOpen;
+  document.getElementById('accBody').style.display = accOpen ? 'block' : 'none';
+  const arr = document.getElementById('accArrow'); arr.textContent = accOpen ? '▲' : '▼'; arr.classList.toggle('open', accOpen);
+}
+
+function kCalc(i, tgt, wt) {
+  const v = parseFloat(document.getElementById('k'+i).value);
+  const pp = document.getElementById('kp'+i), gp = document.getElementById('kg'+i);
+  if (isNaN(v)) { pp.textContent='—'; pp.className='kpct'; gp.textContent='—'; gp.className='gtag gN'; st.kpi[i]=0; updKpiTotal(); return; }
+  const p = Math.min(100, (v/tgt)*100); st.kpi[i] = p*(wt/100);
+  pp.textContent = Math.round(p)+'%'; pp.className='kpct v';
+  const g = p>90?'A':p>=80?'B':p>=60?'C':'D'; gp.textContent=g; gp.className='gtag g'+g; updKpiTotal();
+}
+function updKpiTotal() {
+  const t = Math.round(st.kpi.reduce((a,b)=>a+b,0));
+  document.getElementById('kpiTotal').textContent = t>0?t+'%':'—';
+  document.getElementById('kpiGrade').textContent = t>0?(t>90?'A':t>=80?'B':t>=60?'C':'D'):'—';
+}
+function addExtra() {
+  var list = document.getElementById('epList');
+  var row = document.createElement('div');
+  row.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:8px';
+  row.innerHTML = '<input style="flex:1;border:1.5px solid var(--bd);border-radius:6px;padding:8px 11px;font-size:13px;outline:none;font-family:var(--f);color:var(--tx)" placeholder="Describe an extra project completed this cycle…" />' +
+    '<button style="width:28px;height:28px;border-radius:6px;border:1px solid var(--bd);background:var(--w);cursor:pointer;color:var(--mt);font-size:16px;flex-shrink:0" onclick="this.closest(\'div\').remove()">×</button>';
+  list.appendChild(row);
+  var inp = row.querySelector('input');
+  inp.focus();
+  inp.addEventListener('focus', function(){ this.style.borderColor='var(--y)'; });
+  inp.addEventListener('blur',  function(){ this.style.borderColor='var(--bd)'; });
+}
+
+const vbDefs = [
+  {n:"Punching above your weight",d:"This means that you go above and beyond to do the hard work everyday."},
+  {n:"Solving the hard problems",d:"The talent isn't shy to tackle hard problems or take on difficult tasks for the team."},
+  {n:"Deliver high quality work consistently",d:"The talent has an excellent command of his/her/their deliverables and is impeccable in delivering great work."},
+  {n:"Treat others well",d:"The talent is polite and courteous in relating with other team members in the organisation."},
+  {n:"Ability to work in a team",d:"The talent collaborates well with people within the team and outside the team."},
+  {n:"Never stop learning",d:"Employee shows ability to remain flexible, continually improve and seek after personal growth."}
+];
+const rats = [{l:"Needs\nImprov.",s:25},{l:"Average",s:50},{l:"Effective",s:75},{l:"Strong",s:90},{l:"Outstanding",s:100}];
+
+// ── TAB SWITCHING ──
+function switchTab(tab) {
+  document.getElementById('tabAppraisal').className = 'hdr-tab-btn' + (tab==='appraisal'?' on':'');
+  document.getElementById('tabLogbook').className   = 'hdr-tab-btn' + (tab==='logbook'?' on':'');
+  if (tab === 'logbook') {
+    document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+    document.getElementById('stepperWrap').style.display='none';
+    document.getElementById('sLogbook').classList.add('on');
+  } else {
+    document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+    document.getElementById('s1').classList.add('on');
+    document.getElementById('stepperWrap').style.display='none';
+  }
+  window.scrollTo(0,0);
+}
+
+// ── VB with comments ──
+function buildVB() {
+  var c = document.getElementById('vbList');
+  if (!c) return;
+  var html = '';
+  for (var i = 0; i < vbDefs.length; i++) {
+    var ratBtns = '';
+    for (var j = 0; j < rats.length; j++) {
+      ratBtns += '<button class="r-btn" id="rb' + i + '_' + j + '" onclick="selVB(' + i + ',' + j + ',' + rats[j].s + ')">' +
+        '<span class="r-lbl">' + rats[j].l.replace('\n','<br>') + '</span>' +
+        '<span class="r-sc">' + rats[j].s + '</span></button>';
+    }
+    html +=
+      '<div class="vb-card">' +
+        '<div class="vb-top">' +
+          '<div><div class="vb-name">' + vbDefs[i].n + '</div><div class="vb-desc">' + vbDefs[i].d + '</div></div>' +
+          '<span class="vb-pill vbp-n" id="vbp' + i + '">Not yet rated</span>' +
+        '</div>' +
+        '<div class="r-row">' + ratBtns + '</div>' +
+        '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--bd)">' +
+          '<label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mt);display:block;margin-bottom:5px">Your comment (optional)</label>' +
+          '<textarea style="width:100%;border:1.5px solid var(--bd);border-radius:6px;padding:8px 11px;font-size:12px;resize:none;height:56px;outline:none;font-family:var(--f);color:var(--tx)" placeholder="Add context or evidence for this rating…" onfocus="this.style.borderColor=\'var(--y)\'" onblur="this.style.borderColor=\'var(--bd)\'"></textarea>' +
+        '</div>' +
+      '</div>';
+  }
+  c.innerHTML = html;
+}
+
+// ── SUBMIT MODAL ──
+function showSubmitModal() { document.getElementById('submitModal').classList.remove('hidden'); }
+function closeSubmitModal() { document.getElementById('submitModal').classList.add('hidden'); }
+function confirmSubmit() {
+  closeSubmitModal();
+  submitAppraisal();
+}
+
+// ── LOGBOOK DATA & FUNCTIONS ──
+var lbEntries = [
+  {type:'Win',      title:'Exceeded Instagram follower target for Q1',    date:'2026-03-28', desc:'Hit 2,400 new followers against a 2,500 target — only 4% short. Strong growth despite the rebrand pause in February.',kpi:'Net new Instagram followers'},
+  {type:'Work Log', title:'Completed content calendar for April and May',  date:'2026-04-02', desc:'Prepared and submitted the content calendar two weeks ahead of schedule, allowing the design team more lead time.',kpi:'Content calendar adherence'},
+  {type:'Learning', title:'Completed Meta Blueprint: Social Media Strategy',date:'2026-04-15', desc:'Finished the full course. Applying knowledge to paid social campaign planning for Q2.',kpi:''},
+  {type:'Win',      title:'Highest engagement rate on record — 5.8%',      date:'2026-04-22', desc:'The Lagos Tech Week post series drove 5.8% average engagement, our highest ever. Ahead of the 4.5% target.',kpi:'Average post engagement rate'},
+  {type:'Work Log', title:'Submitted all 4 monthly reports on time',       date:'2026-04-30', desc:'January through April reports all submitted by the 5th of each following month.',kpi:'Monthly content reports submitted'},
+  {type:'Learning', title:'Google Analytics 4 Fundamentals — Completed',   date:'2026-05-03', desc:'Now using GA4 dashboards to pull weekly audience data into the content reports.',kpi:''},
+  {type:'Win',      title:'Content series picked up by TechCabal newsletter',date:'2026-05-10',desc:'Our "Founders in Lagos" Instagram series was featured in the TechCabal weekly digest — external validation of content quality.',kpi:''},
+  {type:'Work Log', title:'Onboarded two freelance content contributors',   date:'2026-05-08', desc:'Briefed and onboarded two freelancers to support content volume during the Eid period.',kpi:'Content calendar adherence'},
+  {type:'Win',      title:'Content calendar adherence at 96% for Q1',      date:'2026-04-01', desc:'Only 2 posts missed across Jan–Mar, both due to public holidays. All other posts published on schedule.',kpi:'Content calendar adherence'},
+];
+var currentEntryType = 'Work Log';
+
+function filterLb() {
+  var q   = (document.querySelector('.lb-srch')||{}).value || '';
+  var typ = document.getElementById('lbTypeFilter').value;
+  var mon = document.getElementById('lbMonthFilter').value;
+  var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var filtered = lbEntries.filter(function(e) {
+    var matchQ   = !q   || e.title.toLowerCase().includes(q.toLowerCase()) || e.desc.toLowerCase().includes(q.toLowerCase());
+    var matchTyp = !typ || e.type === typ;
+    var matchMon = !mon || (e.date && months[parseInt(e.date.split('-')[1])-1] === mon);
+    return matchQ && matchTyp && matchMon;
+  });
+  renderLb(filtered);
+}
+
+function renderLb(entries) {
+  var c = document.getElementById('lbList');
+  if (!entries || entries.length === 0) {
+    c.innerHTML = '<div class="lb-empty"><div class="lb-empty-icon">📖</div><div class="lb-empty-t">No entries found</div><div class="lb-empty-s">Try adjusting your filters or add a new entry.</div></div>';
+    return;
+  }
+  var html = '';
+  var typeClass = {Work_Log:'lb-work', Win:'lb-win', Learning:'lb-learn'};
+  var typeEmoji = {'Work Log':'📋', Win:'🏆', Learning:'📚'};
+  entries.forEach(function(e) {
+    var cls = e.type === 'Work Log' ? 'lb-work' : e.type === 'Win' ? 'lb-win' : 'lb-learn';
+    var dt  = e.date ? new Date(e.date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '';
+    var kpiTag = e.kpi ? '<div><span class="lb-kpi-tag">🎯 ' + e.kpi + '</span></div>' : '';
+    html +=
+      '<div class="lb-entry">' +
+        '<div class="lb-entry-top">' +
+          '<div><div class="lb-title">' + e.title + '</div><div class="lb-meta">' + dt + '</div></div>' +
+          '<span class="lb-type-pill ' + cls + '">' + (typeEmoji[e.type]||'') + ' ' + e.type + '</span>' +
+        '</div>' +
+        '<div class="lb-body">' + e.desc + '</div>' +
+        kpiTag +
+      '</div>';
+  });
+  c.innerHTML = html;
+}
+
+function openNewEntry() {
+  var today = new Date().toISOString().split('T')[0];
+  document.getElementById('efDate').value = today;
+  document.getElementById('efTitle').value = '';
+  document.getElementById('efDesc').value = '';
+  document.getElementById('efKpi').value = '';
+  setEntryType('Work Log');
+  document.getElementById('newEntryModal').classList.remove('hidden');
+}
+function closeNewEntry() { document.getElementById('newEntryModal').classList.add('hidden'); }
+function setEntryType(type) {
+  currentEntryType = type;
+  document.getElementById('etWork').className  = 'et-tab' + (type==='Work Log'?' on':'');
+  document.getElementById('etWin').className   = 'et-tab' + (type==='Win'?' on':'');
+  document.getElementById('etLearn').className = 'et-tab' + (type==='Learning'?' on':'');
+  document.getElementById('efKpiWrap').style.display   = type === 'Learning' ? 'none' : 'block';
+  document.getElementById('efImageWrap').style.display = type === 'Win'      ? 'block' : 'none';
+}
+function handleImgSelect(inp) {
+  if (!inp.files || !inp.files[0]) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('efImgThumb').src = e.target.result;
+    document.getElementById('efImagePreview').style.display = 'block';
+    document.getElementById('efUploadZone').style.display = 'none';
+  };
+  reader.readAsDataURL(inp.files[0]);
+}
+function handleImgDrop(e) {
+  e.preventDefault();
+  document.getElementById('efUploadZone').style.borderColor='var(--bd)';
+  document.getElementById('efUploadZone').style.background='';
+  var file = e.dataTransfer.files[0];
+  if (!file || !file.type.startsWith('image/')) return;
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    document.getElementById('efImgThumb').src = ev.target.result;
+    document.getElementById('efImagePreview').style.display = 'block';
+    document.getElementById('efUploadZone').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+function clearImg() {
+  document.getElementById('efImagePreview').style.display = 'none';
+  document.getElementById('efUploadZone').style.display = 'block';
+  document.getElementById('efImageInp').value = '';
+  document.getElementById('efImgThumb').src = '';
+}
+function saveEntry() {
+  var title = document.getElementById('efTitle').value.trim();
+  if (!title) { document.getElementById('efTitle').style.borderColor='var(--er)'; return; }
+  lbEntries.unshift({
+    type: currentEntryType,
+    title: title,
+    date: document.getElementById('efDate').value,
+    desc: document.getElementById('efDesc').value.trim(),
+    kpi: document.getElementById('efKpi') ? document.getElementById('efKpi').value : ''
+  });
+  closeNewEntry();
+  // Update counts
+  document.getElementById('lbCountWork').textContent  = lbEntries.filter(function(e){return e.type==='Work Log';}).length;
+  document.getElementById('lbCountWin').textContent   = lbEntries.filter(function(e){return e.type==='Win';}).length;
+  document.getElementById('lbCountLearn').textContent = lbEntries.filter(function(e){return e.type==='Learning';}).length;
+  filterLb();
+}
+function selVB(bi,ri,sc) {
+  st.vb[bi]=sc;
+  rats.forEach((_,j)=>{const b=document.getElementById(`rb${bi}_${j}`); if(b) b.classList.toggle('sel',j===ri);});
+  const p=document.getElementById('vbp'+bi); if(p){p.textContent=rats[ri].l.replace('\n',' ');p.className='vb-pill vbp-r';}
+  const avg=Math.round(Object.values(st.vb).reduce((a,b)=>a+b,0)/6);
+  document.getElementById('vbTotal').textContent=avg>0?avg+'%':'—';
+}
+
+function addLrn() {
+  const d=document.createElement('div'); d.className='lrn-row';
+  d.innerHTML=`<input class="lrn-inp" placeholder="e.g. Google Analytics certification"/><input class="lrn-inp" placeholder="e.g. Coursera"/><input class="lrn-inp" placeholder="e.g. Improved reporting skills"/><button class="rm-btn" onclick="this.closest('.lrn-row').remove()">×</button>`;
+  document.getElementById('lrnList').appendChild(d);
+}
+
+function updSummary() {
+  const kpi=Math.round(st.kpi.reduce((a,b)=>a+b,0));
+  const vbVals=Object.values(st.vb);
+  const vb=vbVals.length?Math.round(vbVals.reduce((a,b)=>a+b,0)/6):0;
+  const avg=kpi&&vb?Math.round((kpi+vb)/2):kpi||vb;
+  document.getElementById('sumKPI').textContent=kpi?kpi+'%':'—';
+  document.getElementById('sumVB').textContent=vb?vb+'%':'—';
+  document.getElementById('sumAvg').textContent=avg?avg+'%':'—';
+  st.lastKpi=kpi; st.lastVb=vb;
+}
+function submitAppraisal() {
+  document.getElementById('confKPI').textContent=st.lastKpi?st.lastKpi+'%':'—';
+  document.getElementById('confVB').textContent=st.lastVb?st.lastVb+'%':'—';
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+  document.getElementById('stepperWrap').style.display='none';
+  document.getElementById('s7').classList.add('on');
+  window.scrollTo(0,0);
+}
+
+// ── COUNTDOWN ──
+function updateCountdown() {
+  var deadline = new Date('2026-06-27T23:59:59');
+  var now = new Date();
+  var diff = deadline - now;
+  if (diff <= 0) { document.getElementById('cdDays').textContent='0'; document.getElementById('cdHours').textContent='0'; document.getElementById('cdMins').textContent='0'; return; }
+  var days  = Math.floor(diff / (1000*60*60*24));
+  var hours = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
+  var mins  = Math.floor((diff % (1000*60*60)) / (1000*60));
+  var dEl=document.getElementById('cdDays'), hEl=document.getElementById('cdHours'), mEl=document.getElementById('cdMins');
+  if(dEl) dEl.textContent = days;
+  if(hEl) hEl.textContent = hours;
+  if(mEl) mEl.textContent = String(mins).padStart(2,'0');
+}
+updateCountdown();
+setInterval(updateCountdown, 30000);
+buildVB();
+addLrn();
+filterLb();
+</script>
+</body>
+</html>
